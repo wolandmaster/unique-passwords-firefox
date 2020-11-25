@@ -1,0 +1,208 @@
+/*
+ * Unique Passwords
+ * Copyright (c) 2020, Sandor Balazsi <sandor.balazsi@gmail.com>
+ * This software may be distributed under the terms of the Apache 2.0 license.
+ */
+
+:root {
+  --background-color: #2b2b2b;
+  --foreground-color: #ffffff;
+  --highlight-color: #2196f3;
+  --muted-color: #696969;
+  --input-width: 250px;
+  --transition-time: 300ms;
+}
+
+body {
+  background: var(--background-color);
+  color: var(--foreground-color);
+}
+
+body > svg {
+  display: none;
+}
+
+* {
+  font-family: sans-serif;
+}
+
+h1 {
+  text-align: center;
+  font-size: 16px;
+}
+
+hr {
+  background: var(--foreground-color);
+  border: none;
+  height: 1px;
+}
+
+.group {
+  position: relative;
+  margin-top: 30px;
+}
+
+input {
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--muted-color);
+  padding: 5px 5px;
+  margin: 0 10px;
+  width: var(--input-width);
+  font-size: 14px;
+}
+
+input[type=checkbox] {
+  display: none;
+}
+
+input:focus {
+  border-bottom: 1px solid var(--highlight-color);
+  transition: 1s ease all;
+}
+
+label {
+  color: var(--muted-color);
+  font-size: 14px;
+  user-select: none;
+}
+
+input:focus + label,
+input:not(:placeholder-shown) + label {
+  font-size: 11px;
+  color: var(--highlight-color);
+  top: -14px;
+  left: 9px;
+}
+
+input:not([type=checkbox]):focus + label::after,
+input:not([type=checkbox]):not(:placeholder-shown) + label::after {
+  content: ":";
+}
+
+.group label {
+  position: absolute;
+  left: 15px;
+  top: 5px;
+  transition: var(--transition-time) ease all;
+}
+
+#show-master {
+  width: 20px;
+  height: 20px;
+  fill: var(--foreground-color);
+  position: absolute;
+  top: 3px;
+  left: calc(var(--input-width) - 5px);
+  transition: var(--transition-time) ease all;
+}
+
+.slider {
+  appearance: none;
+  padding: 5px 35px 5px 5px;
+  width: calc(var(--input-width) - 30px);
+}
+
+.slider::-moz-range-thumb {
+  cursor: pointer;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--highlight-color);
+}
+
+#password-length-value {
+  position: absolute;
+  top: 6px;
+  width: 20px;
+  left: calc(var(--input-width) - 5px);
+  font-size: 14px;
+  user-select: none;
+  text-align: center;
+}
+
+.checkbox-spacing {
+  margin-left: 57px;
+}
+
+.check-box {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 0;
+}
+
+.check-mark {
+  stroke-dasharray: 22;
+  stroke-dashoffset: 66;
+}
+
+input[type=checkbox] + label {
+  display: inline-block;
+  margin: 15px 0 10px 9px;
+}
+
+input[type=checkbox] + label svg {
+  position: relative;
+  height: 18px;
+  width: 18px;
+  margin-left: 2px;
+  vertical-align: -4px;
+  fill: none;
+  stroke: var(--muted-color);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  cursor: pointer;
+}
+
+input[type=checkbox] + label svg:hover {
+  stroke: var(--highlight-color);
+}
+
+input[type=checkbox]:checked + label svg {
+  stroke: var(--highlight-color);
+}
+
+input[type=checkbox]:checked + label svg .check-box {
+  stroke-dashoffset: 60;
+  transition: all var(--transition-time) linear;
+}
+
+input[type=checkbox]:checked + label svg .check-mark {
+  stroke-dashoffset: 42;
+  transition: all var(--transition-time) linear;
+  transition-delay: var(--transition-time);
+}
+
+button {
+  background: var(--highlight-color);
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  padding: 5px 10px;
+  margin: 10px 0;
+  letter-spacing: 0.06em;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  cursor: pointer;
+}
+
+button:hover {
+  box-shadow: 0 7px 14px rgba(0, 0, 0, 0.18), 0 5px 5px rgba(0, 0, 0, 0.12);
+}
+
+button:active {
+  position: relative;
+  top: 1px;
+  left: 1px;
+}
+
+#generate {
+  margin-left: 9px;
+  width: calc(var(--input-width) - 70px);
+}
+
+#show-password {
+  margin-right: 9px;
+  float: right;
+  width: 70px;
+}
