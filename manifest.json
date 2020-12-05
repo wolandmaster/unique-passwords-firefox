@@ -34,7 +34,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "@unique-passwords",
-      "strict_min_version": "45.0"
+      "strict_min_version": "48.0"
     }
   }
 }
