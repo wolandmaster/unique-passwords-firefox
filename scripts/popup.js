@@ -6,27 +6,8 @@
 
 "use strict";
 
-const SITE_CONFIG_URL = "";
-// Site config file format:
-// [
-//   {
-//     "domain": "...",
-//     "username": "...",
-//     "passwordLength": 20,
-//     "useLowercase": true,
-//     "useUppercase": true,
-//     "useNumber": true,
-//     "useSpecial": true
-//   },
-//   ...
-// ]
-const CHAR_TABLE_LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
-const CHAR_TABLE_UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const CHAR_TABLE_NUMBER = "0123456789";
-const CHAR_TABLE_SPECIAL = "!\"#$%&'()*+,-./:;<=>?@[]^_`{|}~";
-const HASH_ALGORITHM = "SHA-1";
-
 (async () => {
+  const settings = document.getElementById("settings");
   const domain = document.getElementById("domain");
   const username = document.getElementById("username");
   const usernameList = document.getElementById("username-list");
@@ -40,79 +21,145 @@ const HASH_ALGORITHM = "SHA-1";
   const useSpecial = document.getElementById("use-special");
   const generate = document.getElementById("generate");
   const showPassword = document.getElementById("show-password");
-  const popupParameters = await browser.runtime.sendMessage("getPopupParameters");
 
+  // Initialize content script
+  const popupParameters = await browser.runtime.sendMessage("getPopupParameters");
   let { tabId, frameId, passwordInputId, pageUrl } = popupParameters;
   await assertIsCurrentTab(tabId);
   await browser.tabs.executeScript(tabId, { runAt: "document_start", frameId, file: "scripts/content.js" });
   let port = browser.tabs.connect(tabId, { name: "uniquePasswordsPopup", frameId });
-  port.onMessage.addListener(msg => {
-    if (msg.action === "setUsername") {
-      username.value = msg.username;
-    }
-  });
+
+  // Settings
+  settings.addEventListener("click", () => browser.runtime.openOptionsPage());
+
+  // Domain
   domain.value = getDomain(pageUrl);
+
+  // Username
+  port.onMessage.addListener(msg => (msg.action === "setUsername") && (username.value = msg.username));
   port.postMessage({ action: "getUsername", passwordInputId });
-  if (SITE_CONFIG_URL) {
-    await fetch(SITE_CONFIG_URL, { mode: "no-cors", cache: "no-cache" })
-      .then(response => response.json())
-      .then(json => setSiteSpecificConfig({
-        config: json, port, passwordInputId, domain, username, usernameList, passwordLength,
-        passwordLengthValue, useLowercase, useUppercase, useNumber, useSpecial
-      }))
-      .catch((e) => console.error(e));
-  }
+
+  // Master Password
   addShowPasswordEvent(showMaster,
-    () => {
-      master.type = "text";
-      showMaster.style.fill = "var(--highlight-color)";
-    },
-    () => {
-      master.type = "password";
-      master.focus();
-      showMaster.style.fill = "var(--foreground-color)";
-    });
-  passwordLength.addEventListener("input", async () => passwordLengthValue.textContent = passwordLength.value);
+    () => [ master.type, showMaster.style.fill ] = [ "text", "var(--highlight-color)" ],
+    () => [ master.type, showMaster.style.fill ] = [ "password", "var(--foreground-color)" ]);
+
+  // Password Length
+  passwordLength.addEventListener("input", () => passwordLengthValue.textContent = passwordLength.value);
+
+  // Generate Password
   generate.addEventListener("click", async () => {
-    const charTable = (useLowercase.checked ? CHAR_TABLE_LOWERCASE : "") + (useNumber.checked ? CHAR_TABLE_NUMBER : "")
-      + (useUppercase.checked ? CHAR_TABLE_UPPERCASE : "") + (useSpecial.checked ? CHAR_TABLE_SPECIAL : "");
-    const password = (await generatePassword(charTable, domain.value, username.value, master.value)).substring(0, passwordLength.value);
+    const password = await generatePassword({
+      domain, username, master, passwordLength, useLowercase, useUppercase, useNumber, useSpecial
+    });
     port.postMessage({ action: "setPassword", passwordInputId, password });
+    await saveAccount({ domain, username, passwordLength, useLowercase, useUppercase, useNumber, useSpecial });
   });
+
+  // Show Password
   addShowPasswordEvent(showPassword,
     () => port.postMessage({ action: "showPassword", passwordInputId, visible: true }),
     () => port.postMessage({ action: "showPassword", passwordInputId, visible: false }));
+
+  // Load Cached Accounts
+  await loadAccount({
+    port, passwordInputId, domain, username, usernameList, passwordLength,
+    useLowercase, useUppercase, useNumber, useSpecial
+  });
 })();
 
-async function assertIsCurrentTab(tabId) {
-  let [ currentTab ] = await browser.tabs.query({ active: true, currentWindow: true });
-  if (currentTab.id !== tabId) {
-    throw new Error("The given tab ID is not the currently active tab");
+async function generatePassword(params) {
+  const settings = await browser.storage.local.get();
+  const charTable = ""
+    + (params.useLowercase.checked ? settings.lowercaseChars : "")
+    + (params.useNumber.checked ? settings.numberChars : "")
+    + (params.useUppercase.checked ? settings.uppercaseChars : "")
+    + (params.useSpecial.checked ? settings.specialChars : "");
+  let password = "";
+  if (settings.globalHashAlgorithm.startsWith("sha-")) {
+    const inputData = new TextEncoder().encode(params.domain.value + params.username.value + params.master.value);
+    const hashBuffer = await crypto.subtle.digest(settings.globalHashAlgorithm, inputData);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    password = hashArray.map(hashByte => charTable.charAt(hashByte % charTable.length)).join("");
   }
+  return password.substring(0, params.passwordLength.value);
+}
+
+async function saveAccount(params) {
+  const settings = await browser.storage.local.get();
+  if (!settings.globalCacheAccounts) return;
+  const cachedAccounts = settings.cachedAccounts;
+  const accountToSave = {
+    domain: params.domain.value, username: params.username.value, passwordLength: params.passwordLength.valueAsNumber,
+    useLowercase: params.useLowercase.checked, useUppercase: params.useUppercase.checked,
+    useNumber: params.useNumber.checked, useSpecial: params.useSpecial.checked
+  }
+  let accountUpdated = false;
+  cachedAccounts.forEach((account, index) => {
+    if (params.domain.value === account.domain && params.username.value === account.username) {
+      cachedAccounts[index] = accountToSave;
+      accountUpdated = true;
+    }
+  });
+  if (!accountUpdated) {
+    cachedAccounts.push(accountToSave);
+  }
+  await browser.storage.local.set({ cachedAccounts });
+}
+
+async function loadAccount(params) {
+  const settings = await browser.storage.local.get();
+
+  // Domain
+  params.domain.addEventListener("input", () => {
+    let matchedAccounts = settings.cachedAccounts.filter(({ domain }) => domain === params.domain.value);
+    matchedAccounts.forEach(account => {
+      params.usernameList.appendChild(document.createElement("option")).value = account.username;
+    });
+    if (matchedAccounts.length === 1 && !params.username.value) {
+      params.username.value = matchedAccounts[0].username;
+      params.port.postMessage({
+        action: "setUsername", passwordInputId: params.passwordInputId, username: matchedAccounts[0].username
+      });
+    }
+    params.username.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+
+  // Username
+  params.username.addEventListener("input", () => {
+    let matchedAccounts = settings.cachedAccounts.filter(({ domain, username }) =>
+      domain === params.domain.value && username === params.username.value);
+    if (matchedAccounts.length === 1) {
+      params.passwordLength.valueAsNumber = matchedAccounts[0].passwordLength;
+      params.passwordLength.dispatchEvent(new Event("input", { bubbles: true }));
+      params.useLowercase.checked = matchedAccounts[0].useLowercase;
+      params.useUppercase.checked = matchedAccounts[0].useUppercase;
+      params.useNumber.checked = matchedAccounts[0].useNumber;
+      params.useSpecial.checked = matchedAccounts[0].useSpecial;
+    } else {
+      params.passwordLength.valueAsNumber = settings.globalPasswordLength;
+      params.passwordLength.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  });
+
+  params.domain.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
 function getDomain(url, subdomain) {
   subdomain = subdomain || false;
-  url = url.replace(/(https?:\/\/)?(www.)?/i, '');
-  if (url.indexOf('/') !== -1) {
-    url = url.split('/')[0];
+  url = url.replace(/(https?:\/\/)?(www.)?/i, "");
+  if (url.indexOf("/") !== -1) {
+    url = url.split("/")[0];
   }
   if (!subdomain) {
-    url = url.split('.');
-    url = url.slice(url.length - 2).join('.');
+    url = url.split(".");
+    url = url.slice(url.length - 2).join(".");
   }
   return url;
 }
 
-async function generatePassword(charTable, domain, username, master) {
-  const inputData = new TextEncoder().encode(domain + username + master);
-  const hashBuffer = await crypto.subtle.digest(HASH_ALGORITHM, inputData);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(hashByte => charTable.charAt(hashByte % charTable.length)).join("");
-}
-
 function addShowPasswordEvent(trigger, showCallback, hideCallback) {
-  let mouseDown;
+  let mouseDown = false;
   trigger.addEventListener("mousedown", () => {
     mouseDown = true;
     showCallback();
@@ -128,29 +175,9 @@ function addShowPasswordEvent(trigger, showCallback, hideCallback) {
   });
 }
 
-function setSiteSpecificConfig(params) {
-  params.domain.addEventListener("input", () => {
-    let matchedDomains = params.config.filter(({ domain }) => domain === params.domain.value);
-    params.usernameList.innerHTML = matchedDomains.map(domain => '<option value="' + domain.username + '" />').join('');
-    if (matchedDomains.length === 1 && !params.username.value) {
-      params.port.postMessage({
-        action: "setUsername", passwordInputId: params.passwordInputId, username: matchedDomains[0].username
-      });
-      params.username.value = matchedDomains[0].username;
-    }
-    params.username.dispatchEvent(new Event("input", { bubbles: true }));
-  });
-  params.username.addEventListener("input", () => {
-    let matchedDomains = params.config.filter(({ domain, username }) =>
-      domain === params.domain.value && username === params.username.value);
-    if (matchedDomains.length === 1) {
-      params.passwordLength.value = matchedDomains[0].passwordLength || 20;
-      params.passwordLengthValue.textContent = matchedDomains[0].passwordLength || 20;
-      params.useLowercase.checked = matchedDomains[0].useLowercase === undefined ? true : matchedDomains[0].useLowercase;
-      params.useUppercase.checked = matchedDomains[0].useUppercase === undefined ? true : matchedDomains[0].useUppercase;
-      params.useNumber.checked = matchedDomains[0].useNumber === undefined ? true : matchedDomains[0].useNumber;
-      params.useSpecial.checked = matchedDomains[0].useSpecial === undefined ? true : matchedDomains[0].useSpecial;
-    }
-  });
-  params.domain.dispatchEvent(new Event("input", { bubbles: true }));
+async function assertIsCurrentTab(tabId) {
+  let [ currentTab ] = await browser.tabs.query({ active: true, currentWindow: true });
+  if (currentTab.id !== tabId) {
+    throw new Error("The given tab ID is not the currently active tab");
+  }
 }

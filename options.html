@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Unique Passwords</title>
+    <meta charset="utf-8">
+    <meta name="description" content="Unique Passwords" />
+    <meta name="author" content="Sandor Balazsi (sandor.balazsi@gmail.com)" />
+    <link href="styles/options.css" rel="stylesheet" />
+  </head>
+  <body>
+    <svg xmlns="http://www.w3.org/2000/svg">
+      <symbol id="delete" viewBox="0 0 1000 1000">
+        <path d="M605.7,778.6c-19.2,0-38.4-19.2-38.4-38.4V355.9c0-19.2,19.2-38.4,38.4-38.4s38.4,19.2,38.4,38.4v384.3C624.9,759.4,624.9,778.6,605.7,778.6L605.7,778.6z M394.3,778.6c-19.2,0-38.4-19.2-38.4-38.4V355.9c0-19.2,19.2-38.4,38.4-38.4c19.2,0,38.4,19.2,38.4,38.4v384.3C432.7,759.4,413.5,778.6,394.3,778.6L394.3,778.6z M951.6,182.9H778.6v-76.9C778.6,48.4,721,10,663.3,10H317.5c-57.6,0-96.1,38.4-96.1,96.1v76.9H48.4c-19.2,0-38.4,19.2-38.4,38.4s19.2,38.4,38.4,38.4h903.1c19.2,0,38.4-19.2,38.4-38.4S970.8,182.9,951.6,182.9L951.6,182.9z M279,106.1c0-19.2,19.2-38.4,38.4-38.4h345.9c19.2,0,38.4,19.2,38.4,38.4v76.9H279V106.1L279,106.1z M740.2,990H259.8c-57.6,0-115.3-57.6-115.3-115.3V355.9c0-19.2,19.2-38.4,38.4-38.4c19.2,0,38.4,19.2,38.4,38.4v518.8c0,19.2,19.2,38.4,38.4,38.4h480.4c19.2,0,38.4-19.2,38.4-38.4V355.9c0-19.2,19.2-38.4,38.4-38.4c19.2,0,38.4,19.2,38.4,38.4v518.8C836.3,932.4,797.8,990,740.2,990L740.2,990z" />
+      </symbol>
+    </svg>
+    <h3>General settings</h3>
+    <p>
+      <label for="global-password-length">Password length</label>
+      <input type="number" id="global-password-length" min="3" max="20" />
+    </p>
+    <p>
+      <label for="global-hash-algorithm">Hash algorithm</label>
+      <select id="global-hash-algorithm">
+        <option value="sha-1">sha-1</option>
+        <option value="sha-256">sha-256</option>
+        <option value="sha-384">sha-384</option>
+        <option value="sha-512">sha-512</option>
+      </select>
+    </p>
+    <p>
+      <label for="global-cache-accounts">Cache accounts</label>
+      <input type="checkbox" id="global-cache-accounts">
+    </p>
+    <h3>Used characters</h3>
+    <p>
+      <label for="lowercase-chars">Lowercase</label>
+      <input type="text" id="lowercase-chars" class="charTable" />
+    </p>
+    <p>
+      <label for="uppercase-chars">Uppercase</label>
+      <input type="text" id="uppercase-chars" class="charTable" />
+    </p>
+    <p>
+      <label for="number-chars">Number</label>
+      <input type="text" id="number-chars" class="charTable" />
+    </p>
+    <p>
+      <label for="special-chars">Special</label>
+      <input type="text" id="special-chars" class="charTable" />
+    </p>
+    <h3>Cached accounts</h3>
+    <table>
+      <thead>
+        <tr>
+          <th class="left">Domain</th>
+          <th class="left">Username</th>
+          <th>Length</th>
+          <th title="Lowercase">a</th>
+          <th title="Uppercase">A</th>
+          <th title="Number">1</th>
+          <th title="Special">#</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <template>
+          <tr>
+            <td><input type="text" class="domain" /></td>
+            <td><input type="text" class="username" /></td>
+            <td><input type="number" class="password-length" min="3" max="20" /></td>
+            <td title="Lowercase"><input type="checkbox" class="use-lowercase" /></td>
+            <td title="Uppercase"><input type="checkbox" class="use-uppercase" /></td>
+            <td title="Number"><input type="checkbox" class="use-number" /></td>
+            <td title="Special"><input type="checkbox" class="use-special" /></td>
+            <td title="Forget this account">
+              <svg>
+                <use xlink:href="#delete" />
+              </svg>
+            </td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+    <script src="scripts/options.js"></script>
+  </body>
+</html>

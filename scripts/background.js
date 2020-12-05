@@ -7,6 +7,16 @@
 "use strict";
 
 let popupParameters;
+const defaultSettings = {
+  globalPasswordLength: 20,
+  globalHashAlgorithm: "sha-512",
+  globalCacheAccounts: true,
+  lowercaseChars: "abcdefghijklmnopqrstuvwxyz",
+  uppercaseChars: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+  numberChars: "0123456789",
+  specialChars: "!\"#$%&'()*+,-./:;<=>?@[]^_`{|}~",
+  cachedAccounts: []
+}
 
 browser.menus.create({
   id: "unique-passwords",
@@ -30,4 +40,12 @@ browser.runtime.onMessage.addListener(async (msg) => {
   if (msg === "getPopupParameters") {
     return popupParameters;
   }
+});
+
+browser.storage.local.get().then(settings => {
+  Object.entries(defaultSettings).forEach(([ key, value ]) => {
+    if (!settings[key]) {
+      browser.storage.local.set({ [key]: value });
+    }
+  });
 });

@@ -29,43 +29,43 @@
       }
     });
   });
+})();
 
-  function usernameSelector(element) {
-    return element.tagName === "INPUT" && element.type !== "password"
-      && (element.type === "email"
-        || [ "email", "user", "login", "card" ].some(label =>
-          [ "id", "class", "name" ].some(attr => {
-            let value = element.getAttribute(attr) || "";
-            return value.toLowerCase().includes(label);
-          })));
-  }
+function usernameSelector(element) {
+  return element.tagName === "INPUT" && element.type !== "password"
+    && (element.type === "email"
+      || [ "email", "user", "login", "card" ].some(label =>
+        [ "id", "class", "name" ].some(attr => {
+          let value = element.getAttribute(attr) || "";
+          return value.toLowerCase().includes(label);
+        })));
+}
 
-  function nearestElement(params) {
-    let { queue, selector } = params;
-    while (queue.length !== 0) {
-      let record = queue.shift();
-      let element = record[0], options = record[1] || {};
-      let computedStyle = window.getComputedStyle(element);
-      if (computedStyle.display === "none" || computedStyle.visibility === "hidden") {
-        continue;
-      }
-      if (selector(element)) {
-        return element;
-      }
-      if (!options.ignoreChild) {
-        for (let child = element.firstElementChild; child !== null; child = child.nextElementSibling) {
-          queue.push([ child, { ignoreParent: true, ignorePrev: true, ignoreNext: true } ]);
-        }
-      }
-      if (!options.ignorePrev && element.previousElementSibling) {
-        queue.push([ element.previousElementSibling, { ignoreParent: true, ignoreNext: true } ]);
-      }
-      if (!options.ignoreNext && element.nextElementSibling) {
-        queue.push([ element.nextElementSibling, { ignoreParent: true, ignorePrev: true } ]);
-      }
-      if (!options.ignoreParent && element.parentElement) {
-        queue.push([ element.parentElement, { ignoreChild: true } ]);
+function nearestElement(params) {
+  let { queue, selector } = params;
+  while (queue.length !== 0) {
+    let record = queue.shift();
+    let element = record[0], options = record[1] || {};
+    let computedStyle = window.getComputedStyle(element);
+    if (computedStyle.display === "none" || computedStyle.visibility === "hidden") {
+      continue;
+    }
+    if (selector(element)) {
+      return element;
+    }
+    if (!options.ignoreChild) {
+      for (let child = element.firstElementChild; child !== null; child = child.nextElementSibling) {
+        queue.push([ child, { ignoreParent: true, ignorePrev: true, ignoreNext: true } ]);
       }
     }
+    if (!options.ignorePrev && element.previousElementSibling) {
+      queue.push([ element.previousElementSibling, { ignoreParent: true, ignoreNext: true } ]);
+    }
+    if (!options.ignoreNext && element.nextElementSibling) {
+      queue.push([ element.nextElementSibling, { ignoreParent: true, ignorePrev: true } ]);
+    }
+    if (!options.ignoreParent && element.parentElement) {
+      queue.push([ element.parentElement, { ignoreChild: true } ]);
+    }
   }
-})();
+}
