@@ -9,8 +9,9 @@
 let popupParameters;
 const defaultSettings = {
   globalPasswordLength: 20,
-  globalHashAlgorithm: "sha-512",
-  globalCacheAccounts: true,
+  globalHashAlgorithm: "scrypt",
+  globalCostFactor: "1024",
+  globalCacheAccounts: false,
   lowercaseChars: "abcdefghijklmnopqrstuvwxyz",
   uppercaseChars: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
   numberChars: "0123456789",

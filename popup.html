@@ -83,8 +83,15 @@
       </svg>
     </label>
     <br />
-    <button id="generate">Generate</button>
+    <button id="generate" disabled>Generate
+      <svg id="progress">
+        <use xlink:href="#cog">
+          <animateTransform attributeName="transform" begin="0s" dur="4s" type="rotate" from="0 8 8" to="360 8 8" repeatCount="indefinite" />
+        </use>
+      </svg>
+    </button>
     <button id="show-password">Show</button>
     <script src="scripts/popup.js"></script>
+    <script src="scripts/scrypt.js"></script>
   </body>
 </html>

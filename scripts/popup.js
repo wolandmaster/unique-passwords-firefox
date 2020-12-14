@@ -20,6 +20,7 @@
   const useNumber = document.getElementById("use-number")
   const useSpecial = document.getElementById("use-special");
   const generate = document.getElementById("generate");
+  const progress = document.getElementById("progress");
   const showPassword = document.getElementById("show-password");
 
   // Initialize content script
@@ -34,12 +35,14 @@
 
   // Domain
   domain.value = getDomain(pageUrl);
+  domain.addEventListener("input", setGenerateEnable);
 
   // Username
   port.onMessage.addListener(msg => (msg.action === "setUsername") && (username.value = msg.username));
   port.postMessage({ action: "getUsername", passwordInputId });
 
   // Master Password
+  master.addEventListener("input", setGenerateEnable);
   addShowPasswordEvent(showMaster,
     () => [ master.type, showMaster.style.fill ] = [ "text", "var(--highlight-color)" ],
     () => [ master.type, showMaster.style.fill ] = [ "password", "var(--foreground-color)" ]);
@@ -49,17 +52,29 @@
 
   // Generate Password
   generate.addEventListener("click", async () => {
+    [ progress.style.visibility, progress.style.opacity, generate.disabled ] = [ "visible", 1, true ];
     const password = await generatePassword({
       domain, username, master, passwordLength, useLowercase, useUppercase, useNumber, useSpecial
     });
+    [ progress.style.visibility, progress.style.opacity, generate.disabled ] = [ "hidden", 0, false ];
     port.postMessage({ action: "setPassword", passwordInputId, password });
     await saveAccount({ domain, username, passwordLength, useLowercase, useUppercase, useNumber, useSpecial });
   });
+  function setGenerateEnable() {
+    generate.disabled = domain.value.length === 0 || master.value.length === 0
+      || (!useLowercase.checked && !useUppercase.checked && !useNumber.checked && !useSpecial.checked);
+  }
 
   // Show Password
   addShowPasswordEvent(showPassword,
     () => port.postMessage({ action: "showPassword", passwordInputId, visible: true }),
     () => port.postMessage({ action: "showPassword", passwordInputId, visible: false }));
+
+  // Used character groups
+  useLowercase.addEventListener("input", setGenerateEnable);
+  useUppercase.addEventListener("input", setGenerateEnable);
+  useNumber.addEventListener("input", setGenerateEnable);
+  useSpecial.addEventListener("input", setGenerateEnable);
 
   // Load Cached Accounts
   await loadAccount({
@@ -69,20 +84,25 @@
 })();
 
 async function generatePassword(params) {
+  const textEncoder = new TextEncoder();
   const settings = await browser.storage.local.get();
   const charTable = ""
     + (params.useLowercase.checked ? settings.lowercaseChars : "")
     + (params.useNumber.checked ? settings.numberChars : "")
     + (params.useUppercase.checked ? settings.uppercaseChars : "")
     + (params.useSpecial.checked ? settings.specialChars : "");
-  let password = "";
+  let hash;
   if (settings.globalHashAlgorithm.startsWith("sha-")) {
-    const inputData = new TextEncoder().encode(params.domain.value + params.username.value + params.master.value);
-    const hashBuffer = await crypto.subtle.digest(settings.globalHashAlgorithm, inputData);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    password = hashArray.map(hashByte => charTable.charAt(hashByte % charTable.length)).join("");
+    const data = textEncoder.encode(params.domain.value + params.username.value + params.master.value);
+    hash = Array.from(new Uint8Array(await crypto.subtle.digest(settings.globalHashAlgorithm, data)));
+  } else if (settings.globalHashAlgorithm === "scrypt") {
+    const data = textEncoder.encode(params.master.value);
+    const salt = textEncoder.encode(params.domain.value + params.username.value);
+    hash = Array.from(await scrypt(data, salt, parseInt(settings.globalCostFactor), 8, 1, 20));
   }
-  return password.substring(0, params.passwordLength.value);
+  return hash.map(hashByte => charTable.charAt(hashByte % charTable.length))
+    .join("")
+    .substring(0, params.passwordLength.value);
 }
 
 async function saveAccount(params) {

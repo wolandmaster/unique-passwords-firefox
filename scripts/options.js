@@ -4,10 +4,17 @@
  * This software may be distributed under the terms of the Apache 2.0 license.
  */
 
+"use strict";
+
+const globalHashAlgorithm = document.getElementById("global-hash-algorithm");
+const globalCostFactor = document.getElementById("global-cost-factor");
+const globalCostFactorLabel = document.getElementById("global-cost-factor-label");
+
 async function restoreSettings() {
   const settings = await browser.storage.local.get();
   document.querySelectorAll("input, select")
     .forEach(element => setInputValue(element, settings[element.id.toCamelCase()]));
+  globalHashAlgorithm.dispatchEvent(new Event("input", { bubbles: true }));
   const cachedAccountsTable = document.querySelector("table");
   if (settings.cachedAccounts.length === 0) {
     cachedAccountsTable.style.display = "none";
@@ -75,3 +82,10 @@ String.prototype.toCamelCase = function () {
 }
 
 document.addEventListener("DOMContentLoaded", restoreSettings);
+globalHashAlgorithm.addEventListener("input", function () {
+  if (this.value === "scrypt") {
+    [ globalCostFactor.style.visibility, globalCostFactorLabel.style.visibility ] = [ "visible", "visible" ];
+  } else {
+    [ globalCostFactor.style.visibility, globalCostFactorLabel.style.visibility ] = [ "hidden", "hidden" ];
+  }
+});
