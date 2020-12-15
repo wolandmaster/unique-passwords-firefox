@@ -22,8 +22,10 @@
         port.postMessage({ action: "setUsername", username });
       } else if (msg.action === "setUsername" && usernameInput) {
         usernameInput.value = msg.username;
+        usernameInput.dispatchEvent(new Event("input", { bubbles: true }));
       } else if (msg.action === "setPassword") {
         passwordInput.value = msg.password;
+        passwordInput.dispatchEvent(new Event("input", { bubbles: true }));
       } else if (msg.action === "showPassword") {
         passwordInput.type = msg.visible ? "text" : "password";
       }

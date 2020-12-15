@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Unique Passwords",
   "short_name": "unique-passwords",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Generate strong and unique site-specific passwords!",
   "homepage_url": "https://github.com/wolandmaster/unique-passwords-firefox",
   "icons": {

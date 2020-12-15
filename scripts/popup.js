@@ -38,7 +38,7 @@
   domain.addEventListener("input", setGenerateEnable);
 
   // Username
-  port.onMessage.addListener(msg => (msg.action === "setUsername") && (username.value = msg.username));
+  port.onMessage.addListener(msg => (msg.action === "setUsername") && (msg.username) && (username.value = msg.username));
   port.postMessage({ action: "getUsername", passwordInputId });
 
   // Master Password
