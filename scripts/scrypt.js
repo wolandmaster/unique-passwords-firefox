@@ -1,5 +1,5 @@
 /*
- * Pure JavaScript implementation of the scrypt password-based key derivation function.
+ * Pure JavaScript implementation of scrypt pbkdf [https://github.com/ricmoo/scrypt-js]
  * Copyright (c) 2016 Richard Moore
  * The MIT License (MIT)
  */

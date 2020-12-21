@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Unique Passwords settings schema",
+  "required": [
+    "globalPasswordLength",
+    "globalHashAlgorithm",
+    "lowercaseChars",
+    "uppercaseChars",
+    "numberChars",
+    "specialChars"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "globalPasswordLength": {
+      "type": "integer",
+      "minimum": 3,
+      "maximum": 20,
+      "default": 20
+    },
+    "globalHashAlgorithm": {
+      "type": "string",
+      "enum": [
+        "sha-1",
+        "sha-256",
+        "sha-384",
+        "sha-512",
+        "scrypt"
+      ],
+      "default": "scrypt"
+    },
+    "globalCostFactor": {
+      "type": "string",
+      "default": "1024"
+    },
+    "globalCacheAccounts": {
+      "type": "boolean",
+      "default": false
+    },
+    "lowercaseChars": {
+      "type": "string",
+      "default": "abcdefghijklmnopqrstuvwxyz"
+    },
+    "uppercaseChars": {
+      "type": "string",
+      "default": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    },
+    "numberChars": {
+      "type": "string",
+      "default": "0123456789"
+    },
+    "specialChars": {
+      "type": "string",
+      "default": "!\"#$%&'()*+,-./:;<=>?@[]^_`{|}~"
+    },
+    "cachedAccounts": {
+      "type": "array",
+      "items": {
+        "required": [
+          "domain",
+          "username",
+          "passwordLength",
+          "useLowercase",
+          "useUppercase",
+          "useNumber",
+          "useSpecial"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "domain": {
+            "type": "string",
+            "format": "hostname"
+          },
+          "username": {
+            "type": "string"
+          },
+          "passwordLength": {
+            "type": "integer",
+            "minimum": 3,
+            "maximum": 20,
+            "default": 20
+          },
+          "useLowercase": {
+            "type": "boolean",
+            "default": true
+          },
+          "useUppercase": {
+            "type": "boolean",
+            "default": true
+          },
+          "useNumber": {
+            "type": "boolean",
+            "default": true
+          },
+          "useSpecial": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      }
+    }
+  }
+}

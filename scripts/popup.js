@@ -1,7 +1,7 @@
 /*
- * Unique Passwords
- * Copyright (c) 2020, Sandor Balazsi <sandor.balazsi@gmail.com>
- * This software may be distributed under the terms of the Apache 2.0 license.
+ * Unique Passwords [https://github.com/wolandmaster/unique-passwords-firefox]
+ * Copyright (c) 2020 Sandor Balazsi
+ * This software may be distributed under the terms of the Apache 2.0 license
  */
 
 "use strict";

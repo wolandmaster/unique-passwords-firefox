@@ -4,7 +4,7 @@
     <title>Unique Passwords</title>
     <meta charset="utf-8">
     <meta name="description" content="Unique Passwords" />
-    <meta name="author" content="Sandor Balazsi (sandor.balazsi@gmail.com)" />
+    <meta name="author" content="Sandor Balazsi" />
     <link href="styles/options.css" rel="stylesheet" />
   </head>
   <body>
@@ -13,6 +13,11 @@
         <path d="M605.7,778.6c-19.2,0-38.4-19.2-38.4-38.4V355.9c0-19.2,19.2-38.4,38.4-38.4s38.4,19.2,38.4,38.4v384.3C624.9,759.4,624.9,778.6,605.7,778.6L605.7,778.6z M394.3,778.6c-19.2,0-38.4-19.2-38.4-38.4V355.9c0-19.2,19.2-38.4,38.4-38.4c19.2,0,38.4,19.2,38.4,38.4v384.3C432.7,759.4,413.5,778.6,394.3,778.6L394.3,778.6z M951.6,182.9H778.6v-76.9C778.6,48.4,721,10,663.3,10H317.5c-57.6,0-96.1,38.4-96.1,96.1v76.9H48.4c-19.2,0-38.4,19.2-38.4,38.4s19.2,38.4,38.4,38.4h903.1c19.2,0,38.4-19.2,38.4-38.4S970.8,182.9,951.6,182.9L951.6,182.9z M279,106.1c0-19.2,19.2-38.4,38.4-38.4h345.9c19.2,0,38.4,19.2,38.4,38.4v76.9H279V106.1L279,106.1z M740.2,990H259.8c-57.6,0-115.3-57.6-115.3-115.3V355.9c0-19.2,19.2-38.4,38.4-38.4c19.2,0,38.4,19.2,38.4,38.4v518.8c0,19.2,19.2,38.4,38.4,38.4h480.4c19.2,0,38.4-19.2,38.4-38.4V355.9c0-19.2,19.2-38.4,38.4-38.4c19.2,0,38.4,19.2,38.4,38.4v518.8C836.3,932.4,797.8,990,740.2,990L740.2,990z" />
       </symbol>
     </svg>
+    <p>
+      <input type="file" id="import-settings-input" accept="application/json" />
+      <button id="import-settings">Import</button>
+      <button id="export-settings">Export</button>
+    </p>
     <h3>General settings</h3>
     <p>
       <label for="global-password-length">Password length</label>
@@ -102,6 +107,7 @@
         </template>
       </tbody>
     </table>
+    <script src="scripts/tv4.js"></script>
     <script src="scripts/options.js"></script>
   </body>
 </html>
