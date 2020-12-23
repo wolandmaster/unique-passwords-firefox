@@ -18,6 +18,7 @@
         selector: usernameSelector
       });
       if (msg.action === "getUsername") {
+        usernameInput.dispatchEvent(new Event("focus", { bubbles: true }));
         let username = usernameInput ? usernameInput.value : "";
         port.postMessage({ action: "setUsername", username });
       } else if (msg.action === "setUsername" && usernameInput) {
