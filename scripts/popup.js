@@ -43,6 +43,12 @@
 
   // Master Password
   master.addEventListener("input", setGenerateEnable);
+  master.addEventListener("keyup", (event) => {
+    if (event.key === "Enter") {
+      generate.focus();
+      generate.click();
+    }
+  });
   addShowPasswordEvent(showMaster,
     () => [ master.type, showMaster.style.fill ] = [ "text", "var(--highlight-color)" ],
     () => [ master.type, showMaster.style.fill ] = [ "password", "var(--foreground-color)" ]);
@@ -59,6 +65,12 @@
     [ progress.style.visibility, progress.style.opacity, generate.disabled ] = [ "hidden", 0, false ];
     port.postMessage({ action: "setPassword", passwordInputId, password });
     await saveAccount({ domain, username, passwordLength, useLowercase, useUppercase, useNumber, useSpecial });
+  });
+  generate.addEventListener("keyup", (event) => {
+    if (event.key === "Enter") {
+      generate.click();
+      window.close();
+    }
   });
   function setGenerateEnable() {
     generate.disabled = domain.value.length === 0 || master.value.length === 0
