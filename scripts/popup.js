@@ -177,13 +177,17 @@ async function loadAccount(params) {
   params.domain.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
+function isIpAddress(domain) {
+  return /^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$/.test(domain)
+}
+
 function getDomain(url, subdomain) {
   subdomain = subdomain || false;
   url = url.replace(/(https?:\/\/)?(www.)?/i, "");
   if (url.indexOf("/") !== -1) {
     url = url.split("/")[0];
   }
-  if (!subdomain) {
+  if (!subdomain && !isIpAddress(url)) {
     url = url.split(".");
     url = url.slice(url.length - 2).join(".");
   }
