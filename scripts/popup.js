@@ -1,6 +1,6 @@
 /*
  * Unique Passwords [https://github.com/wolandmaster/unique-passwords-firefox]
- * Copyright (c) 2020 Sandor Balazsi
+ * Copyright (c) 2020-2021 Sandor Balazsi
  * This software may be distributed under the terms of the Apache 2.0 license
  */
 
@@ -72,6 +72,7 @@
       window.close();
     }
   });
+
   function setGenerateEnable() {
     generate.disabled = domain.value.length === 0 || master.value.length === 0
       || (!useLowercase.checked && !useUppercase.checked && !useNumber.checked && !useSpecial.checked);
@@ -90,7 +91,7 @@
 
   // Load Cached Accounts
   await loadAccount({
-    port, passwordInputId, domain, username, usernameList, passwordLength,
+    port, passwordInputId, pageUrl, domain, username, usernameList, passwordLength,
     useLowercase, useUppercase, useNumber, useSpecial
   });
 })();
@@ -122,9 +123,13 @@ async function saveAccount(params) {
   if (!settings.globalCacheAccounts) return;
   const cachedAccounts = settings.cachedAccounts;
   const accountToSave = {
-    domain: params.domain.value, username: params.username.value, passwordLength: params.passwordLength.valueAsNumber,
-    useLowercase: params.useLowercase.checked, useUppercase: params.useUppercase.checked,
-    useNumber: params.useNumber.checked, useSpecial: params.useSpecial.checked
+    domain: params.domain.value,
+    username: params.username.value,
+    passwordLength: params.passwordLength.valueAsNumber,
+    useLowercase: params.useLowercase.checked,
+    useUppercase: params.useUppercase.checked,
+    useNumber: params.useNumber.checked,
+    useSpecial: params.useSpecial.checked
   }
   let accountUpdated = false;
   cachedAccounts.forEach((account, index) => {
@@ -136,6 +141,7 @@ async function saveAccount(params) {
   if (!accountUpdated) {
     cachedAccounts.push(accountToSave);
   }
+  cachedAccounts.sort((a, b) => a.domain.localeCompare(b.domain));
   await browser.storage.local.set({ cachedAccounts });
 }
 
@@ -144,7 +150,12 @@ async function loadAccount(params) {
 
   // Domain
   params.domain.addEventListener("input", () => {
-    let matchedAccounts = settings.cachedAccounts.filter(({ domain }) => domain === params.domain.value);
+    let matchedAccounts = settings.cachedAccounts.filter(({ domain }) => domain === getDomain(params.pageUrl, true));
+    if (matchedAccounts.length === 0) {
+      matchedAccounts = settings.cachedAccounts.filter(({ domain }) => domain === params.domain.value);
+    } else if (matchedAccounts[0].domain !== params.domain.value) {
+      params.domain.value = matchedAccounts[0].domain;
+    }
     matchedAccounts.forEach(account => {
       params.usernameList.appendChild(document.createElement("option")).value = account.username;
     });
@@ -163,15 +174,14 @@ async function loadAccount(params) {
       domain === params.domain.value && username === params.username.value);
     if (matchedAccounts.length === 1) {
       params.passwordLength.valueAsNumber = matchedAccounts[0].passwordLength;
-      params.passwordLength.dispatchEvent(new Event("input", { bubbles: true }));
       params.useLowercase.checked = matchedAccounts[0].useLowercase;
       params.useUppercase.checked = matchedAccounts[0].useUppercase;
       params.useNumber.checked = matchedAccounts[0].useNumber;
       params.useSpecial.checked = matchedAccounts[0].useSpecial;
     } else {
       params.passwordLength.valueAsNumber = settings.globalPasswordLength;
-      params.passwordLength.dispatchEvent(new Event("input", { bubbles: true }));
     }
+    params.passwordLength.dispatchEvent(new Event("input", { bubbles: true }));
   });
 
   params.domain.dispatchEvent(new Event("input", { bubbles: true }));

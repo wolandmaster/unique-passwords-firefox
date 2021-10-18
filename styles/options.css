@@ -1,6 +1,6 @@
 /*
  * Unique Passwords [https://github.com/wolandmaster/unique-passwords-firefox]
- * Copyright (c) 2020 Sandor Balazsi
+ * Copyright (c) 2020-2021 Sandor Balazsi
  * This software may be distributed under the terms of the Apache 2.0 license
  */
 
