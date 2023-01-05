@@ -1,6 +1,6 @@
 /*
  * Unique Passwords [https://github.com/wolandmaster/unique-passwords-firefox]
- * Copyright (c) 2020-2021 Sandor Balazsi
+ * Copyright (c) 2020-2023 Sandor Balazsi
  * This software may be distributed under the terms of the Apache 2.0 license
  */
 
@@ -34,7 +34,6 @@ browser.menus.onClicked.addListener(async (info, tab) => {
   };
   browser.pageAction.show(tab.id);
   await browser.pageAction.openPopup();
-  await browser.pageAction.hide(tab.id);
 });
 
 browser.runtime.onMessage.addListener(async (msg) => {

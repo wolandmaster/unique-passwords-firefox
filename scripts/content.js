@@ -1,6 +1,6 @@
 /*
  * Unique Passwords [https://github.com/wolandmaster/unique-passwords-firefox]
- * Copyright (c) 2020-2021 Sandor Balazsi
+ * Copyright (c) 2020-2023 Sandor Balazsi
  * This software may be distributed under the terms of the Apache 2.0 license
  */
 
@@ -30,6 +30,10 @@
       } else if (msg.action === "setPassword" && passwordInput) {
         passwordInput.value = msg.password;
         passwordInput.dispatchEvent(new Event("input", { bubbles: true }));
+      } else if (msg.action === "getPassword" && passwordInput) {
+        passwordInput.dispatchEvent(new Event("focus", { bubbles: true }));
+        let password = passwordInput ? passwordInput.value : "";
+        port.postMessage({ action: "copyPassword", password });
       } else if (msg.action === "showPassword" && passwordInput) {
         passwordInput.type = msg.visible ? "text" : "password";
       }

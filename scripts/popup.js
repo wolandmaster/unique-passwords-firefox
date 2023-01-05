@@ -1,13 +1,13 @@
 /*
  * Unique Passwords [https://github.com/wolandmaster/unique-passwords-firefox]
- * Copyright (c) 2020-2021 Sandor Balazsi
+ * Copyright (c) 2020-2023 Sandor Balazsi
  * This software may be distributed under the terms of the Apache 2.0 license
  */
 
 "use strict";
 
 (async () => {
-  const settings = document.getElementById("settings");
+  const cog = document.getElementById("cog");
   const domain = document.getElementById("domain");
   const username = document.getElementById("username");
   const usernameList = document.getElementById("username-list");
@@ -22,6 +22,7 @@
   const generate = document.getElementById("generate");
   const progress = document.getElementById("progress");
   const showPassword = document.getElementById("show-password");
+  const copyPassword = document.getElementById("copy-password");
 
   // Initialize content script
   const popupParameters = await browser.runtime.sendMessage("getPopupParameters");
@@ -29,12 +30,19 @@
   await assertIsCurrentTab(tabId);
   await browser.tabs.executeScript(tabId, { runAt: "document_start", frameId, file: "scripts/content.js" });
   let port = browser.tabs.connect(tabId, { name: "uniquePasswordsPopup", frameId });
+  const settings = await browser.storage.local.get();
 
-  // Settings
-  settings.addEventListener("click", () => browser.runtime.openOptionsPage());
+  // Cog (Settings)
+  cog.addEventListener("click", () => browser.runtime.openOptionsPage());
 
   // Domain
-  domain.value = getDomain(pageUrl);
+  let subDomain = getDomain(pageUrl, true);
+  let matchedAccounts = settings.cachedAccounts.filter(({ domain }) => domain === subDomain);
+  if (matchedAccounts.length > 0) {
+      domain.value = subDomain;
+  } else {
+      domain.value = getDomain(pageUrl);
+  }
   domain.addEventListener("input", setGenerateEnable);
 
   // Username
@@ -82,6 +90,12 @@
   addShowPasswordEvent(showPassword,
     () => port.postMessage({ action: "showPassword", passwordInputId, visible: true }),
     () => port.postMessage({ action: "showPassword", passwordInputId, visible: false }));
+
+  // Copy Password
+  addShowPasswordEvent(copyPassword,
+    () => port.postMessage({ action: "getPassword", passwordInputId }), () => {});
+  port.onMessage.addListener(msg => (msg.action === "copyPassword")
+    && (msg.password) && navigator.clipboard.writeText(msg.password));
 
   // Used character groups
   useLowercase.addEventListener("input", setGenerateEnable);
@@ -150,12 +164,7 @@ async function loadAccount(params) {
 
   // Domain
   params.domain.addEventListener("input", () => {
-    let matchedAccounts = settings.cachedAccounts.filter(({ domain }) => domain === getDomain(params.pageUrl, true));
-    if (matchedAccounts.length === 0) {
-      matchedAccounts = settings.cachedAccounts.filter(({ domain }) => domain === params.domain.value);
-    } else if (matchedAccounts[0].domain !== params.domain.value) {
-      params.domain.value = matchedAccounts[0].domain;
-    }
+    let matchedAccounts = settings.cachedAccounts.filter(({ domain }) => domain === params.domain.value);
     matchedAccounts.forEach(account => {
       params.usernameList.appendChild(document.createElement("option")).value = account.username;
     });

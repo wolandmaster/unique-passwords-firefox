@@ -1,6 +1,6 @@
 /*
  * Unique Passwords [https://github.com/wolandmaster/unique-passwords-firefox]
- * Copyright (c) 2020-2021 Sandor Balazsi
+ * Copyright (c) 2020-2023 Sandor Balazsi
  * This software may be distributed under the terms of the Apache 2.0 license
  */
 
@@ -31,7 +31,7 @@ h1 {
   font-size: 16px;
 }
 
-#settings {
+#cog {
   fill: var(--muted-color);
   cursor: pointer;
   position: absolute;
@@ -42,7 +42,7 @@ h1 {
   transition: var(--transition-time) ease all;
 }
 
-#settings:hover {
+#cog:hover {
   fill: var(--highlight-color);
 }
 
@@ -227,15 +227,25 @@ button:disabled {
 
 #generate {
   margin-left: 9px;
-  width: calc(var(--input-width) - 70px);
+  width: calc(var(--input-width) - 91px);
   position: relative;
   transition: var(--transition-time) ease all;
 }
 
-#show-password {
+#copy {
+  width: 15px;
+  height: 15px;
+  margin: -2px 0 -2px -5px;
+  fill: var(--foreground-color);
+}
+
+#copy-password {
   margin-right: 9px;
-  float: right;
-  width: 70px;
+  width: 27px;
+}
+
+#show-password {
+  width: 65px;
 }
 
 #progress {
